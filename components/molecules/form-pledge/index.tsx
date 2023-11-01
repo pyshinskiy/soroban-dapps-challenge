@@ -5,6 +5,7 @@ import { Utils } from '../../../shared/utils'
 import styles from './style.module.css'
 import { Spacer } from '../../atoms/spacer'
 import { abundance, crowdfund } from '../../../shared/contracts'
+import { Address } from 'soroban-client'
 
 export interface IFormPledgeProps {
   account: string
@@ -24,7 +25,17 @@ export interface IResultSubmit {
 /**
  * Mint 100.0000000 tokens to the user's wallet for testing
  */
-function MintButton({ account, symbol, onComplete, decimals }: { decimals: number, account: string; symbol: string, onComplete: () => void }) {
+function MintButton({
+  account,
+  symbol,
+  onComplete,
+  decimals,
+}: {
+  decimals: number
+  account: string
+  symbol: string
+  onComplete: () => void
+}) {
   const [isSubmitting, setSubmitting] = useState(false)
 
   const displayAmount = 100
@@ -35,7 +46,8 @@ function MintButton({ account, symbol, onComplete, decimals }: { decimals: numbe
       title={`Mint ${displayAmount} ${symbol}`}
       onClick={async () => {
         setSubmitting(true)
-        await abundance.mint({ to: account, amount })
+        const address = new Address(account)
+        await abundance.mint({ to: address, amount })
         setSubmitting(false)
         onComplete()
       }}
@@ -56,8 +68,9 @@ const FormPledge: FunctionComponent<IFormPledgeProps> = props => {
   const [isSubmitting, setSubmitting] = useState(false)
 
   React.useEffect(() => {
+    const address = new Address(props.account)
     Promise.all([
-      abundance.balance({ id: props.account }),
+      abundance.balance({ id: address }),
       abundance.decimals(),
       abundance.symbol(),
     ]).then(fetched => {
@@ -75,10 +88,10 @@ const FormPledge: FunctionComponent<IFormPledgeProps> = props => {
     if (!amount) return
 
     setSubmitting(true)
-
     try {
+      const address = new Address(props.account)
       await crowdfund.deposit({
-        user: props.account,
+        user: address,
         amount: BigInt(amount * 10 ** decimals),
       })
 
@@ -97,7 +110,7 @@ const FormPledge: FunctionComponent<IFormPledgeProps> = props => {
           error: e?.message || 'An error has occurred',
         })
       } else {
-        throw e;
+        throw e
       }
     } finally {
       setSubmitting(false)
@@ -163,7 +176,9 @@ const FormPledge: FunctionComponent<IFormPledgeProps> = props => {
           />
           <div className={styles.wrapper}>
             <div>
-              <h6>Your balance:  {Utils.formatAmount(balance, decimals)} {symbol}</h6>
+              <h6>
+                Your balance: {Utils.formatAmount(balance, decimals)} {symbol}
+              </h6>
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import styles from './style.module.css'
 import { Utils } from '../../../shared/utils'
 import { Spacer } from '../../atoms/spacer'
 import { crowdfund } from '../../../shared/contracts'
+import { Address } from 'soroban-client'
 
 export interface IDepositsProps {
   address: string
@@ -15,9 +16,9 @@ export function Deposits(props: IDepositsProps) {
   const [balance, setBalance] = React.useState<BigInt>(BigInt(0))
 
   React.useEffect(() => {
-    crowdfund.balance({ user: props.address }).then(setBalance)
+    const address = new Address(props.address)
+    crowdfund.balance({ user: address }).then(setBalance)
   }, [props.address])
-
 
   if (Number(balance) <= 0) {
     return <React.Fragment />

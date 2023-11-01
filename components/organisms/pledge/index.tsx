@@ -33,8 +33,9 @@ const Pledge: FunctionComponent = () => {
   }>()
 
   React.useEffect(() => {
+    const address = new SorobanClient.Address(crowdfundContract.options.contractId)
     Promise.all([
-      abundanceContract.balance({ id: crowdfundContract.options.contractId }),
+      abundanceContract.balance({ id: address }),
       abundanceContract.decimals(),
       abundanceContract.name(),
       abundanceContract.symbol(),
